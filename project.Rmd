@@ -3,6 +3,8 @@ title: "Final Project"
 author: "David Cobb"
 date: "March 23, 2019"
 output: flexdashboard::flex_dashboard
+vertical_layout: fill
+runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
@@ -26,20 +28,21 @@ library("glmnet")
 theme_set(theme_bw())
 ```
 
-### Read Raw Data
+
 ```{r data}
+# Read Raw Data
 fars <- read_csv("../project/car-safety-fars.csv")
 fars_summary <- read_csv("../project/car-safety-fars-cleaned-data.csv")
 ```
 
-### Add MAKE_MODEL column to the raw data
 ```{r}
+# Add MAKE_MODEL column to the raw data
 fars = mutate(fars,
    MAKE_MODEL = paste(VINMAKE_T, VINMODEL_T, sep = '_'))
 ```
 
-### Create Training and Testing Data
 ```{r}
+# Create Training and Testing Data
 set.seed(1)
 df_fars <- tbl_df(fars)
 inTraining <- createDataPartition(df_fars$Fatal_Injury, p = .50, list = F)
@@ -50,24 +53,20 @@ inTraining <- createDataPartition(df_fars$Fatal_Injury, p = .50, list = F)
 Page 1 - Summary Table
 =====================================  
 
-### Summary Table
-
 ```{r}
-#  - Get the Data Organized to look at The Counts by Make
-# Summarize the data for some descriptive reporting - we need a sense of what the data is
 fars_filter <- filter(fars_summary, MAKE_MODEL != "_")
 by_make_model <- group_by(fars_filter, MAKE_MODEL,DRIVETYP, DISPCLMT, TURBO_T, SUPCHRGR_T)
-new <- summarize(by_make_model, fatals = sum(Fatal_Injury),
-          injuries = sum(Suspected_Minor_Injury + Suspected_Serious_Injury),
-          no_injury = sum(No_Apparent_Injury),
-          count = n())
-new
+new <- summarize(by_make_model, 
+                 fatals = sum(Fatal_Injury),
+                 injuries = sum(Suspected_Minor_Injury + Suspected_Serious_Injury),
+                 no_injury = sum(No_Apparent_Injury))
+renderDataTable(new)
 ```
 
-Page 2 - Summary Charts 1
+Page 2 - Summary Charts {data-orientation=rows}
 =====================================     
 
-### Chart 1  -- Drive Type Summary
+### Chart 1 
 ```{r}
 chart1 <- ggplot(data = new) +
   #geom_point(mapping = aes(x = DRIVETYP, y = fatals)) +
@@ -86,10 +85,10 @@ chart2 + geom_violin(alpha = .15) +
   guides(col = F)
 ```
    
-Page 3 - Summary Charts 2
+Page 3 - Summary Charts 2  {data-orientation=rows}
 =====================================  
 
-### Chart 4 - Fatal Injurys Compared to Drive Type and Displacement
+### Chart 4 - Fatal Injuries Compared to Drive Type and Displacement
 ```{r}
 fars_displacement <- filter(fars, DISPCLMT != "NA")
 chart4 <- ggplot(data = fars_displacement,
@@ -102,7 +101,7 @@ chart4 + geom_violin()
 ```{r}
 chart5 <- ggplot(new, aes(x = DISPCLMT, y = fatals)) +
   geom_point() +
-  geom_smooth(method = "lm") +
+  scale_x_discrete(labels = abbreviate) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 chart5
 ```
@@ -111,7 +110,8 @@ Page 4 - Logistic Regression
 =====================================  
 ### Logistic Regression Using 4 Variables
 ```{r}
-tidy(glm(Fatal_Injury ~ DRIVETYP + TURBO_T + SUPCHRGR_T + MAKE_MODEL, data = fars))
+lrm <- tidy(glm(Fatal_Injury ~ DRIVETYP + TURBO_T + SUPCHRGR_T + MAKE_MODEL, data = fars))
+renderDataTable(lrm)
 ```
 
 Page 5 - Tree Attempt
@@ -125,13 +125,13 @@ plot(first_tree)
 text(first_tree, cex=.75)
 ```
 
-Page 6 - Huge Chart
+Page 6 - Another Chart
 =====================================  
-### Can it fit
+### Fatals by Drive Type and Turbo Charged
 ```{r}
-chart3 <- ggplot(data = fars_filter, aes(x = VINMAKE_T, y = Fatal_Injury)) +
-  geom_point() +
-  theme_light() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+chart3 <- ggplot(data = fars_filter) +
+  geom_point(aes(x = DRIVETYP,  y = TURBO_T,  size = Fatal_Injury)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 chart3
 ```
