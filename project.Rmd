@@ -171,7 +171,7 @@ Page 7 - Methodology
 
 ### Regression Observations
 Does performance matter?  Does make and model matter?
-1)  Turbos might matter
-2)  A short list of Make Models show up with significant P-Values, suggesting there are differences between make and models in terms of fatal outcomes
-3)  Other factors included don't suggest there a relationship to the target variable
-4)  Need to go another layer deeper into the data
+1)  Turbos might matter, but we need more data to tell
+2)  A short list of Make Models show up with significant P-Values, suggesting there are differences between make and models in terms of fatal outcomes.  Again, really need more data as we can't tell how significant the fatal accidents are without more crash data.  Roughly 35k fatalities and 7.5 million crashes.  Since the goal of this is to determine if the make model and performance characteristics are significant, more data is needed to understannd how accidents play out across the make x model population (1000s of combinations)
+3)  Other factors included in the analysis don't suggest there a relationship to the target variable
+4)  The overall conclusion is that this to go another layer deeper, and needs to leverage 'big data' to truly understand how safe our cars are and whether or not certain cars are very dangerous.
